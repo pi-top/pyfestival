@@ -7,11 +7,13 @@ except (ImportError, SystemError, ValueError):
 
 # taken from six. Don't want external dependencies
 import sys
+
 TEXT_TYPE = str if sys.version_info[0] == 3 else unicode
 
 import subprocess
 import tempfile
 import os
+
 
 def info():
     """Prints info about festival
@@ -22,6 +24,7 @@ def info():
     """
 
     _festival.info()
+
 
 def textToWavFile(text):
     """Returns a filename for a wav file created
@@ -34,8 +37,9 @@ def textToWavFile(text):
     """
     if not isinstance(text, TEXT_TYPE):
         text = text.decode('utf-8')
-    
+
     return _festival._textToWav(text)
+
 
 def textToWav(text):
     """Returns a file object for a wav file created with
@@ -47,19 +51,18 @@ def textToWav(text):
     
     This method may return None if an error occurs
     """
-    
+
     tmp_path = textToWavFile(text)
     try:
         with open(tmp_path, 'rb') as w:
-            tmp_file = tempfile.SpooledTemporaryFile(max_size=4*1024*1024, mode='wb')
+            tmp_file = tempfile.SpooledTemporaryFile(max_size=4 * 1024 * 1024, mode='wb')
             tmp_file.write(w.read())
             tmp_file.seek(0)
         return tmp_file
     finally:
         os.remove(tmp_path)
-    
-    return None
-    
+
+
 def textToMp3(text):
     """Returns a file-like object (pipe) for an mp3 file
     created with the text 'text'
@@ -68,17 +71,17 @@ def textToMp3(text):
 
     The file returned is a temp file. It is removed when closed
     """
-    
+
     wav_file = textToWavFile(text)
     try:
         cmd = "lame --quiet -V 9 %s -" % wav_file
-        tmp_file = tempfile.SpooledTemporaryFile(max_size=4*1024*1024, mode='wb')
+        tmp_file = tempfile.SpooledTemporaryFile(max_size=4 * 1024 * 1024, mode='wb')
         tmp_file.write(subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read())
         tmp_file.seek(0)
         return tmp_file
     finally:
         os.remove(wav_file)
-    return None
+
 
 def textToMp3File(text):
     """Returns a filename to an mp3 file created containing
@@ -93,6 +96,7 @@ def textToMp3File(text):
         os.remove(filename)
     return filename + ".mp3"
 
+
 def sayText(text):
     """Tells _festival.to say the text 'text'
     
@@ -106,6 +110,7 @@ def sayText(text):
         text = text.decode('utf-8')
     return _festival._sayText(text)
 
+
 def sayFile(filename):
     """Given a filename, say the contents of the file
     
@@ -117,9 +122,10 @@ def sayFile(filename):
     """
 
     if not os.path.exists(filename):
-        raise ValueError("Could not find file %s" % filename);
+        raise ValueError("Could not find file %s" % filename)
 
     return _festival.sayFile(filename)
+
 
 def setStretchFactor(f):
     """Set the stretch factor of the audio to be returned.
@@ -133,7 +139,8 @@ def setStretchFactor(f):
     except ValueError:
         raise ValueError("Input parameter must be a float")
     return _festival.setStretchFactor(f)
-    
+
+
 def execCommand(cmd):
     """Execute a _festival.command
     
@@ -143,4 +150,3 @@ def execCommand(cmd):
     E.g. execCommand("(SayText \"helo\")")
     """
     return _festival.execCommand(cmd)
-
